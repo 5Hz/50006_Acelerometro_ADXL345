@@ -32,7 +32,7 @@ Gnd      -  GND
 //definiciones/////////////////////////
 #define DEVICE (0x9D) // Direccion del dispositivo como se especifica en la hoja de datos 
 
-byte _buff[6];
+
 
 char POWER_CTL = 0x2D;	//Registro de Control de Potencia
 char DATA_FORMAT = 0x31;
@@ -42,6 +42,12 @@ char DATAY0 = 0x34;	//Dato Eje Y 0
 char DATAY1 = 0x35;	//Dato Eje Y 1
 char DATAZ0 = 0x36;	//Dato Eje Z 0
 char DATAZ1 = 0x37;	//Dato Eje Z 1
+byte _buff[6];
+int minVal = -142;      
+int maxVal = 112;
+double X;      
+double Y;  
+double Z;
 
 void setup()
 {
@@ -57,11 +63,7 @@ void setup()
 
 void loop()
 {
-  readAccel(); // lee la inclinación x/y/z 
-  delay(100); // sólo lee cada 0.5 segundos 
-}
-
-void readAccel() {
+  
   uint8_t howManyBytesToRead = 6;
   readFrom( DATAX0, howManyBytesToRead, _buff); //lee los datos de aceleración del ADXL345 
 
@@ -70,12 +72,16 @@ void readAccel() {
   int x = (((int)_buff[1]) << 8) | _buff[0];   
   int y = (((int)_buff[3]) << 8) | _buff[2];
   int z = (((int)_buff[5]) << 8) | _buff[4];
-  Serial.print("x: ");
-  Serial.print( x );
-  Serial.print(" y: ");
-  Serial.print( y );
-  Serial.print(" z: ");
-  Serial.println( z );
+
+int zAng = map(z, minVal, maxVal, -128, 128);
+Y = RAD_TO_DEG * (atan2(-y, -zAng) + PI);  
+X = RAD_TO_DEG * (atan2(-x, -zAng) + PI);  
+Z = RAD_TO_DEG * (atan2(-y, -x) + PI); 
+  Serial.print("x: ");  
+  Serial.print(X);  
+  Serial.print("   y: ");  
+  Serial.println(Y);
+  delay(100);
 }
 
 void writeTo(byte address, byte val) {
